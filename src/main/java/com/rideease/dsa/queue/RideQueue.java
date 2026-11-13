@@ -86,7 +86,6 @@ public class RideQueue {
         System.out.println(" <- REAR");
     }
 
-    // Day 1 test — at least three sample ride requests, incl. wrap-around
     public static void main(String[] args) {
         RideQueue queue = new RideQueue(3);
 
