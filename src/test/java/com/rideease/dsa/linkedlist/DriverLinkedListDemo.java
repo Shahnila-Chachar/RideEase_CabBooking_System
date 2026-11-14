@@ -4,7 +4,9 @@ public class DriverLinkedListDemo {
     public static void main(String[] args) {
         DriverLinkedList list = new DriverLinkedList();
 
+
         System.out.println("== EDGE: operations on an empty list ==");
+        System.out.println("findById on empty: " + list.findById("Anyone")); // false
         list.display();
         System.out.println("size: " + list.size());
         System.out.println("removeById on empty: " + list.removeById("Anyone"));
@@ -48,6 +50,12 @@ public class DriverLinkedListDemo {
         System.out.println("Removed Ali? " + list.removeById("Ali"));
         list.display();                                                   // Sara -> Omar
         System.out.println("size: " + list.size());
+
+        System.out.println("\n== findById ==");
+        System.out.println("find Sara:   " + list.findById("Sara"));     // true
+        System.out.println("find Omar:   " + list.findById("Omar"));     // true (the tail)
+        System.out.println("find Nobody: " + list.findById("Nobody"));   // false
+        System.out.println("find null:   " + list.findById(null));       // false
 
         System.out.println("\n== drain: remove Sara, then Omar ==");
         System.out.println("Removed Sara? " + list.removeById("Sara"));

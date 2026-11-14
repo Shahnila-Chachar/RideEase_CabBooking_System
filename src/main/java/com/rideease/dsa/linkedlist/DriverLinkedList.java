@@ -7,6 +7,7 @@ package com.rideease.dsa.linkedlist;
  *   addFirst()   -> O(1)   new node becomes the head
  *   addLast()    -> O(1)   tail pointer avoids walking the list
  *   removeById() -> O(n)   walks the list to find the id
+ *   findById()   -> O(n)   walks the list until the id matches
  *   isEmpty()    -> O(1)
  *   size()       -> O(1)
  *   display()    -> O(n)   visits every node
@@ -105,6 +106,21 @@ public class DriverLinkedList {
         prev.next = prev.next.next;  // unlink
         size--;
         return true;
+    }
+
+    // ---- findById: walk the list looking for a matching id ----
+    public boolean findById(String driverId) {
+        if (driverId == null) {
+            return false;            // EDGE: null id
+        }
+        Node current = head;
+        while (current != null) {
+            if (current.driverId.equals(driverId)) {
+                return true;         // found it
+            }
+            current = current.next;
+        }
+        return false;                // reached the end, not found
     }
 
     public void display() {
