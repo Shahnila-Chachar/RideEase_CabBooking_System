@@ -14,7 +14,7 @@ package com.rideease.dsa.queue;
  * Space: O(capacity), fixed for the lifetime of the queue.
  *
  * Note: Day 1 stores String labels because the Ride model class doesn't
- * exist yet. Future upgrade:will make this generic (RideQueue<T>) so it can
+ * exist yet. Future upgrade: will make this generic (RideQueue<T>) so it can
  * hold Ride objects.
  */
 public class RideQueue {
@@ -26,6 +26,9 @@ public class RideQueue {
     private int capacity;       // maximum number of requests
 
     public RideQueue(int capacity) {
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("Capacity must be greater than 0");
+        }
         this.capacity = capacity;
         this.rides = new String[capacity];
         this.front = 0;
@@ -41,19 +44,18 @@ public class RideQueue {
         return size == capacity;
     }
 
-    public void enqueue(String ride) {
+    public boolean enqueue(String ride) {
         if (isFull()) {
-            System.out.println("[RideQueue] Full — rejected: " + ride);
-            return;
+            return false;
         }
         rear = (rear + 1) % capacity;   // circular wrap-around
         rides[rear] = ride;
         size++;
+        return true;
     }
 
     public String dequeue() {
         if (isEmpty()) {
-            System.out.println("[RideQueue] Empty — nothing to serve");
             return null;
         }
         String served = rides[front];   // FIFO: front holds the oldest request
@@ -84,32 +86,5 @@ public class RideQueue {
             }
         }
         System.out.println(" <- REAR");
-    }
-
-    public static void main(String[] args) {
-        RideQueue queue = new RideQueue(3);
-
-        System.out.println("== enqueue 3 rides (fills the queue) ==");
-        queue.enqueue("BK-101: Ali -> Mall Road (Cab)");
-        queue.enqueue("BK-102: Sara -> Airport (Rickshaw)");
-        queue.enqueue("BK-103: Omar -> Station (Cab)");
-        queue.display();
-
-        System.out.println("\n== peek (no removal) ==");
-        System.out.println("Next to serve: " + queue.peek());
-
-        System.out.println("\n== dequeue (serve the oldest) ==");
-        System.out.println("Served: " + queue.dequeue());
-        queue.display();
-
-        System.out.println("\n== enqueue one more — index WRAPS around ==");
-        queue.enqueue("BK-104: Hina -> Safari Park (Rickshaw)");
-        queue.display();
-
-        System.out.println("\n== drain the queue ==");
-        while (!queue.isEmpty()) {
-            System.out.println("Served: " + queue.dequeue());
-        }
-        queue.display();
     }
 }
