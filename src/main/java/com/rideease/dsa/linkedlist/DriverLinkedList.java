@@ -1,31 +1,46 @@
 package com.rideease.dsa.linkedlist;
 
+import com.rideease.model.Driver;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 /**
- * DriverLinkedList — singly linked list for managing driver records.
+ * DriverLinkedList — singly linked list for managing Driver records.
+ *
+ * Each node holds a full Driver object, so other classes (for example
+ * DriverMatchingService) can read city, service area and online status
+ * while walking the list.
  *
  * Time complexity:
  *   addFirst()   -> O(1)   new node becomes the head
  *   addLast()    -> O(1)   tail pointer avoids walking the list
  *   removeById() -> O(n)   walks the list to find the id
  *   findById()   -> O(n)   walks the list until the id matches
+ *   contains()   -> O(n)   same walk as findById()
+ *   iterator()   -> O(1) to create, O(n) to walk the whole list
  *   isEmpty()    -> O(1)
  *   size()       -> O(1)
  *   display()    -> O(n)   visits every node
  *
  * Space: O(n), one node per driver.
  *
- * Note: DriverLinkedList stores String driver IDs because the Driver model class
- * doesn't exist yet. In future nodes will hold Driver objects.
+ * Driver IDs are ints (Driver.getDriverId()). The list does not check for
+ * duplicate IDs; the caller is expected to add each driver once.
+ *
+ * Because the class implements Iterable, it can be traversed with a
+ * for-each loop:
+ *     for (Driver d : list) { ... }
  */
-public class DriverLinkedList {
+public class DriverLinkedList implements Iterable<Driver> {
 
     // ---- Node ----
     private static class Node {
-        String driverId;
+        Driver driver;
         Node next;
 
-        Node(String driverId) {
-            this.driverId = driverId;
+        Node(Driver driver) {
+            this.driver = driver;
         }
     }
 
@@ -42,11 +57,11 @@ public class DriverLinkedList {
     }
 
     // ---- addFirst: new node becomes the head ----
-    public boolean addFirst(String driverId) {
-        if (driverId == null) {
-            return false;            // EDGE: null id rejected
+    public boolean addFirst(Driver driver) {
+        if (driver == null) {
+            return false;            // EDGE: null driver rejected
         }
-        Node newNode = new Node(driverId);
+        Node newNode = new Node(driver);
         newNode.next = head;
         head = newNode;
 
@@ -58,11 +73,11 @@ public class DriverLinkedList {
     }
 
     // ---- addLast: new node goes after tail ----
-    public boolean addLast(String driverId) {
-        if (driverId == null) {
-            return false;            // EDGE: null id rejected
+    public boolean addLast(Driver driver) {
+        if (driver == null) {
+            return false;            // EDGE: null driver rejected
         }
-        Node newNode = new Node(driverId);
+        Node newNode = new Node(driver);
         if (isEmpty()) {
             head = newNode;          // empty list: node is both
             tail = newNode;          // first and last
@@ -74,14 +89,14 @@ public class DriverLinkedList {
         return true;
     }
 
-    // ---- removeById: unlink the first node whose id matches ----
-    public boolean removeById(String driverId) {
-        if (driverId == null || isEmpty()) {
-            return false;            // EDGE: null id or nothing to remove
+    // ---- removeById: unlink the first node whose driver id matches ----
+    public boolean removeById(int driverId) {
+        if (isEmpty()) {
+            return false;            // EDGE: nothing to remove
         }
 
         // EDGE: the head itself matches
-        if (head.driverId.equals(driverId)) {
+        if (head.driver.getDriverId() == driverId) {
             head = head.next;
             if (head == null) {
                 tail = null;         // removed the ONLY node
@@ -92,7 +107,7 @@ public class DriverLinkedList {
 
         // Walk with a prev pointer, looking one node ahead
         Node prev = head;
-        while (prev.next != null && !prev.next.driverId.equals(driverId)) {
+        while (prev.next != null && prev.next.driver.getDriverId() != driverId) {
             prev = prev.next;
         }
 
@@ -108,19 +123,44 @@ public class DriverLinkedList {
         return true;
     }
 
-    // ---- findById: walk the list looking for a matching id ----
-    public boolean findById(String driverId) {
-        if (driverId == null) {
-            return false;            // EDGE: null id
-        }
+    // ---- findById: return the matching Driver, or null if not found ----
+    public Driver findById(int driverId) {
         Node current = head;
         while (current != null) {
-            if (current.driverId.equals(driverId)) {
-                return true;         // found it
+            if (current.driver.getDriverId() == driverId) {
+                return current.driver;   // found it
             }
             current = current.next;
         }
-        return false;                // reached the end, not found
+        return null;                     // reached the end, not found
+    }
+
+    // ---- contains: true/false version of findById ----
+    public boolean contains(int driverId) {
+        return findById(driverId) != null;
+    }
+
+    // ---- iterator: lets callers use for-each over the drivers ----
+    @Override
+    public Iterator<Driver> iterator() {
+        return new Iterator<Driver>() {
+            private Node current = head;
+
+            @Override
+            public boolean hasNext() {
+                return current != null;
+            }
+
+            @Override
+            public Driver next() {
+                if (current == null) {
+                    throw new NoSuchElementException();
+                }
+                Driver driver = current.driver;
+                current = current.next;
+                return driver;
+            }
+        };
     }
 
     public void display() {
@@ -131,7 +171,7 @@ public class DriverLinkedList {
         Node current = head;
         System.out.print("HEAD -> ");
         while (current != null) {
-            System.out.print(current.driverId);
+            System.out.print(current.driver.getDriverId() + ":" + current.driver.getCity());
             if (current.next != null) {
                 System.out.print(" -> ");
             }
