@@ -5,16 +5,18 @@ public class User {
 
     private int userId;
     private String fullName;
+    private String phone;
     private String email;
     private String passwordHash;
     private UserRole role;
 
-    public User(int userId, String fullName, String email,
+    public User(int userId, String fullName, String email, String phone,
                 String passwordHash, UserRole role) {
 
         this.userId = userId;
         this.fullName = fullName;
         this.email = email;
+        this.phone = phone;
         this.passwordHash = passwordHash;
         this.role = role;
     }
@@ -32,6 +34,10 @@ public class User {
         return email;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
     public String getPasswordHash() {
         return passwordHash;
     }
@@ -47,6 +53,10 @@ public class User {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public void setEmail(String email) {
