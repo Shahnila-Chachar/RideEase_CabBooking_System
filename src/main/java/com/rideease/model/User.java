@@ -1,4 +1,3 @@
-
 package com.rideease.model;
 
 public class User {
@@ -9,7 +8,7 @@ public class User {
     private String email;
     private String passwordHash;
     private UserRole role;
-
+  
     public User(int userId, String fullName, String email, String phone,
                 String passwordHash, UserRole role) {
 
