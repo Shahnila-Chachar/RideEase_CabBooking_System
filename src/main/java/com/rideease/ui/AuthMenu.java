@@ -51,14 +51,20 @@ public class AuthMenu {
 
         String fullName = promptValidName();
         String email = promptValidEmail();
+        String phone = promptValidPhone();
         String password = promptValidPassword();
         UserRole role = promptValidRole();
 
         try {
-            User createdUser = userService.register(fullName, email, password, role);
-            System.out.println("Registration successful! Welcome, " + createdUser.getFullName()
+            User createdUser = userService.register(
+                    fullName, email, phone, password, role
+            );
+
+            System.out.println("Registration successful! Welcome, "
+                    + createdUser.getFullName()
                     + " (" + createdUser.getRole() + ").");
-        } catch (IllegalArgumentException e) {
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("Registration failed: " + e.getMessage());
         }
     }
@@ -72,16 +78,21 @@ public class AuthMenu {
         System.out.print("Enter password: ");
         String password = scanner.nextLine();
 
-        if (InputValidator.isEmptyOrBlank(email) || InputValidator.isEmptyOrBlank(password)) {
+        if (InputValidator.isEmptyOrBlank(email)
+                || InputValidator.isEmptyOrBlank(password)) {
             System.out.println("Login failed: Email and password cannot be empty.");
             return null;
         }
 
         try {
             User user = userService.login(email, password);
-            System.out.println("Login successful! Welcome back, " + user.getFullName()
+
+            System.out.println("Login successful! Welcome back, "
+                    + user.getFullName()
                     + " [" + user.getRole() + "].");
+
             return user;
+
         } catch (IllegalArgumentException e) {
             System.out.println("Login failed: " + e.getMessage());
             return null;
@@ -92,9 +103,11 @@ public class AuthMenu {
         while (true) {
             System.out.print("Enter full name: ");
             String name = scanner.nextLine();
+
             if (InputValidator.isValidName(name)) {
                 return name.trim();
             }
+
             System.out.println("Invalid name. Use at least 2 alphabetic characters.");
         }
     }
@@ -103,15 +116,31 @@ public class AuthMenu {
         while (true) {
             System.out.print("Enter email: ");
             String email = scanner.nextLine().trim();
+
             if (!InputValidator.isValidEmail(email)) {
                 System.out.println("Invalid email format (e.g., user@example.com).");
                 continue;
             }
+
             if (userService.isEmailRegistered(email)) {
                 System.out.println("This email is already registered. Try another email.");
                 continue;
             }
+
             return email;
+        }
+    }
+
+    private String promptValidPhone() {
+        while (true) {
+            System.out.print("Enter phone number: ");
+            String phone = scanner.nextLine().trim();
+
+            if (InputValidator.isValidPhoneNumber(phone)) {
+                return phone;
+            }
+
+            System.out.println("Invalid phone number. Please enter a valid number.");
         }
     }
 
@@ -119,9 +148,11 @@ public class AuthMenu {
         while (true) {
             System.out.print("Enter password (min 6 characters): ");
             String password = scanner.nextLine();
+
             if (InputValidator.isValidPassword(password)) {
                 return password;
             }
+
             System.out.println("Password must be at least 6 characters long.");
         }
     }
@@ -132,14 +163,17 @@ public class AuthMenu {
             System.out.println("1. PASSENGER");
             System.out.println("2. DRIVER");
             System.out.print("Enter choice (1 or 2): ");
+
             String roleChoice = scanner.nextLine().trim();
 
             if ("1".equals(roleChoice)) {
                 return UserRole.PASSENGER;
             }
+
             if ("2".equals(roleChoice)) {
                 return UserRole.DRIVER;
             }
+
             System.out.println("Invalid choice. Please enter 1 for PASSENGER or 2 for DRIVER.");
         }
     }
