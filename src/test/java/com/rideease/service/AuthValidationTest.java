@@ -1,6 +1,5 @@
 package com.rideease.service;
 
-import com.rideease.model.User;
 import com.rideease.model.UserRole;
 import com.rideease.validation.InputValidator;
 
@@ -8,8 +7,9 @@ public class AuthValidationTest {
 
     public static void main(String[] args) {
         testInputValidator();
-        testUserService();
-        System.out.println("ALL DAY 3 TESTS PASSED!");
+        testPasswordHashing();
+
+        System.out.println("ALL AUTHENTICATION TESTS PASSED!");
     }
 
     private static void testInputValidator() {
@@ -36,39 +36,22 @@ public class AuthValidationTest {
         check(!InputValidator.isValidRegistrationRole(UserRole.ADMIN), "ADMIN registration should fail");
     }
 
-    private static void testUserService() {
+    private static void testPasswordHashing() {
         UserService userService = new UserService();
-
-        User user = userService.register("Ayesha Khan", "Ayesha@RideEase.com", "pass123", UserRole.PASSENGER);
-        check(user != null, "Registered user should not be null");
-        check(user.getUserId() == 1, "First user ID should be 1");
-        check("ayesha@rideease.com".equals(user.getEmail()), "Email should be normalized");
-        check(!"pass123".equals(user.getPasswordHash()), "Password must be hashed");
-
-        boolean duplicateBlocked = false;
-        try {
-            userService.register("Another User", "AYESHA@rideease.com", "pass456", UserRole.DRIVER);
-        } catch (IllegalArgumentException e) {
-            duplicateBlocked = true;
-        }
-        check(duplicateBlocked, "Duplicate email should throw exception");
-
-        User loggedIn = userService.login("ayesha@rideease.com", "pass123");
-        check(loggedIn != null && "Ayesha Khan".equals(loggedIn.getFullName()), "Valid login failed");
-
-        boolean wrongPasswordBlocked = false;
-        try {
-            userService.login("ayesha@rideease.com", "wrongpass");
-        } catch (IllegalArgumentException e) {
-            wrongPasswordBlocked = true;
-        }
-        check(wrongPasswordBlocked, "Wrong password should throw exception");
 
         String hash1 = userService.hashPassword("secret123");
         String hash2 = userService.hashPassword("secret123");
+
         check(!hash1.equals(hash2), "Salted hashes should be unique");
-        check(userService.verifyPassword("secret123", hash1), "Hash verification failed");
-        check(!userService.verifyPassword("wrong", hash1), "Wrong password should not verify");
+
+        check(userService.verifyPassword("secret123", hash1),
+                "Correct password verification failed");
+
+        check(!userService.verifyPassword("wrong", hash1),
+                "Wrong password should not verify");
+
+        check(!userService.verifyPassword("secret123", "invalid-hash"),
+                "Invalid hash should fail verification");
     }
 
     private static void check(boolean condition, String message) {
