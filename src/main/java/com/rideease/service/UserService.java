@@ -44,7 +44,7 @@ public class UserService {
         }
 
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
-        String normalizedPhone = phone.trim();
+        String normalizedPhone = phone.trim().replaceAll("[\\s-]", "");
 
         if (userDAO.emailExists(normalizedEmail)) {
             throw new IllegalArgumentException("Email is already registered.");
