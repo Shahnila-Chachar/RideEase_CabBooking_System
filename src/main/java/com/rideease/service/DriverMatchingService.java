@@ -5,7 +5,9 @@ import com.rideease.model.Driver;
 
 /**
  * DriverMatchingService — finds an eligible driver for a booking.
- * Note: Text comparison ignores upper/lower case ("sukkur" = "Sukkur").
+
+ * Note: Text comparison ignores upper/lower case and extra spaces
+ * (" sukkur " = "Sukkur").
  */
 public class DriverMatchingService {
 
@@ -31,6 +33,9 @@ public class DriverMatchingService {
                                String city,
                                String serviceArea,
                                String vehicleType) {
+        if (driver == null) {
+            return false;                        // EDGE: null entry
+        }
         if (!driver.isOnline()) {
             return false;                        // skip offline drivers
         }
@@ -52,8 +57,8 @@ public class DriverMatchingService {
         return true;
     }
 
-    // true only when both texts exist and match, ignoring case
+    // true only when both texts exist and match,
     private boolean sameText(String a, String b) {
-        return a != null && a.equalsIgnoreCase(b);
+        return a != null && b != null && a.trim().equalsIgnoreCase(b.trim());
     }
 }

@@ -78,6 +78,23 @@ public class DriverMatchingServiceTest {
         lower.setVehicleType("cab");
         check(findOnly(service, lower) != null, "case is ignored");
 
+        System.out.println("\n== extra spaces are ignored ==");
+        Driver spaced = makeDriver(12);
+        spaced.setCity("  Sukkur ");
+        spaced.setServiceArea(" Military Road  ");
+        spaced.setVehicleType(" CAB ");
+        check(findOnly(service, spaced) != null, "leading/trailing spaces ignored");
+        check(service.findEligibleDriver(one, null, " Sukkur", "Military Road ", " cab") != null,
+                "spaces in the booking values are ignored too");
+
+        System.out.println("\n== null driver cannot enter the list ==");
+        DriverLinkedList withNull = new DriverLinkedList();
+        check(!withNull.addLast(null), "addLast(null) is rejected");
+        withNull.addLast(makeDriver(13));
+        Driver afterNull = find(service, withNull, null);
+        check(afterNull != null && afterNull.getDriverId() == 13,
+                "list still works after a rejected null");
+
         System.out.println("\n== one eligible driver among several ==");
         DriverLinkedList mixed = new DriverLinkedList();
         mixed.addLast(offline);          // skipped
@@ -98,6 +115,16 @@ public class DriverMatchingServiceTest {
         excluded.addLast(makeDriver(11));
         check(find(service, mixed, excluded) == null,
                 "all eligible drivers excluded returns null");
+
+        System.out.println("\n== duplicate driver ids ==");
+        DriverLinkedList dupes = new DriverLinkedList();
+        dupes.addLast(makeDriver(20));
+        dupes.addLast(makeDriver(20));   // same id twice
+        DriverLinkedList excludeTwenty = new DriverLinkedList();
+        excludeTwenty.addLast(makeDriver(20));
+        check(find(service, dupes, null) != null, "duplicate ids: first copy is found");
+        check(find(service, dupes, excludeTwenty) == null,
+                "duplicate ids: excluding id 20 skips both copies");
 
         System.out.println("\nAll " + passed + " checks passed.");
     }

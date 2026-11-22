@@ -17,6 +17,8 @@ public class AssignmentRetryManagerTest {
         return d;
     }
 
+    // Fake responder: accepts only the drivers whose ids are in acceptIds,
+    // and records every driver it was asked about.
     private static class FakeResponder implements DriverResponder {
         private final int[] acceptIds;
         private final StringBuilder offered = new StringBuilder();
@@ -90,6 +92,38 @@ public class AssignmentRetryManagerTest {
                 "each driver was asked exactly once");
         check("1 2 3 ".contentEquals(rejectsAll.offered),
                 "no driver was asked twice");
+
+        System.out.println("\n== many rejections before one accepts ==");
+        DriverLinkedList five = new DriverLinkedList();
+        for (int id = 1; id <= 5; id++) {
+            five.addLast(makeDriver(id));
+        }
+        FakeResponder acceptsFifth = new FakeResponder(5);
+        check("5".equals(assign(manager, five, acceptsFifth)),
+                "driver 5 is assigned after four rejections");
+        check("1 2 3 4 5 ".contentEquals(acceptsFifth.offered),
+                "each rejected driver was asked exactly once");
+
+        System.out.println("\n== duplicate driver ids ==");
+        DriverLinkedList dupes = new DriverLinkedList();
+        dupes.addLast(makeDriver(30));
+        dupes.addLast(makeDriver(30));   // same id twice
+        FakeResponder rejectsDupes = new FakeResponder();
+        check(AssignmentRetryManager.NO_DRIVER_AVAILABLE.equals(
+                        assign(manager, dupes, rejectsDupes)),
+                "duplicate id rejected once is not offered again");
+        check(rejectsDupes.offerCount == 1,
+                "driver id 30 was asked only once");
+
+        System.out.println("\n== spaces in city, area and vehicle type ==");
+        Driver spaced = makeDriver(40);
+        spaced.setCity(" Sukkur ");
+        spaced.setServiceArea("Military Road ");
+        spaced.setVehicleType(" CAB");
+        DriverLinkedList spacedList = new DriverLinkedList();
+        spacedList.addLast(spaced);
+        check("40".equals(assign(manager, spacedList, new FakeResponder(40))),
+                "driver with extra spaces is still matched");
 
         System.out.println("\n== ineligible drivers are never offered ==");
         Driver offline = makeDriver(10);
