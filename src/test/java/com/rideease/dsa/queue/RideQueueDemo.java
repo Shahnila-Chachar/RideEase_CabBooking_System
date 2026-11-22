@@ -10,6 +10,10 @@ public class RideQueueDemo {
         System.out.println("dequeue on empty: " + queue.dequeue());   // null
         queue.display();
 
+        System.out.println("\n== EDGE: enqueue null ==");
+        System.out.println("Added null? " + queue.enqueue(null));   // false
+        queue.display();                                            // still empty
+
         System.out.println("\n== enqueue 3 rides (fills the queue) ==");
         queue.enqueue("BK-101: Ali -> Mall Road (Cab)");
         queue.enqueue("BK-102: Sara -> Airport (Rickshaw)");

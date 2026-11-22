@@ -6,12 +6,14 @@ import com.rideease.model.Driver;
 /**
  * AssignmentRetryManager — assigns one booking to a driver, retrying
  * with the next driver whenever a driver rejects.
-
  */
 public class AssignmentRetryManager {
 
+    // Returned when no driver accepts. Driver ids start at 1, so -1 is safe.
+    public static final int NO_DRIVER_AVAILABLE = -1;
+
     // Same text as the NO_DRIVER_AVAILABLE booking status in the database
-    public static final String NO_DRIVER_AVAILABLE = "NO_DRIVER_AVAILABLE";
+    public static final String NO_DRIVER_AVAILABLE_STATUS = "NO_DRIVER_AVAILABLE";
 
     private final DriverMatchingService matchingService;
 
@@ -19,12 +21,12 @@ public class AssignmentRetryManager {
         this.matchingService = matchingService;
     }
 
-    // Returns the accepting driver's id (as text), or NO_DRIVER_AVAILABLE
-    public String assignDriver(DriverLinkedList drivers,
-                               String city,
-                               String serviceArea,
-                               String vehicleType,
-                               DriverResponder responder) {
+    // Returns the accepting driver's id, or NO_DRIVER_AVAILABLE
+    public int assignDriver(DriverLinkedList drivers,
+                            String city,
+                            String serviceArea,
+                            String vehicleType,
+                            DriverResponder responder) {
         if (drivers == null || responder == null) {
             return NO_DRIVER_AVAILABLE;          // EDGE: nothing to work with
         }
@@ -39,7 +41,7 @@ public class AssignmentRetryManager {
                 return NO_DRIVER_AVAILABLE;      // no driver remains
             }
             if (responder.accepts(driver)) {
-                return String.valueOf(driver.getDriverId());
+                return driver.getDriverId();
             }
             tried.addLast(driver);               // rejected: never offer again
         }

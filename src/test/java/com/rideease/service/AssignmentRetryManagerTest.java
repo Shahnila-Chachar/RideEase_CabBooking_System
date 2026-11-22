@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public class AssignmentRetryManagerTest {
 
+    private static final int NONE = AssignmentRetryManager.NO_DRIVER_AVAILABLE;
     private static int passed = 0;
 
     private static Driver makeDriver(int id) {
@@ -41,9 +42,9 @@ public class AssignmentRetryManagerTest {
         }
     }
 
-    private static String assign(AssignmentRetryManager manager,
-                                 DriverLinkedList drivers,
-                                 DriverResponder responder) {
+    private static int assign(AssignmentRetryManager manager,
+                              DriverLinkedList drivers,
+                              DriverResponder responder) {
         return manager.assignDriver(
                 drivers, "Sukkur", "Military Road", "CAB", responder);
     }
@@ -53,17 +54,17 @@ public class AssignmentRetryManagerTest {
                 new AssignmentRetryManager(new DriverMatchingService());
 
         System.out.println("== EDGE: nothing to assign ==");
-        check(AssignmentRetryManager.NO_DRIVER_AVAILABLE.equals(
-                        assign(manager, new DriverLinkedList(), new FakeResponder())),
+        check(assign(manager, new DriverLinkedList(), new FakeResponder()) == NONE,
                 "empty list returns NO_DRIVER_AVAILABLE");
-        check(AssignmentRetryManager.NO_DRIVER_AVAILABLE.equals(
-                        assign(manager, null, new FakeResponder())),
+        check(assign(manager, null, new FakeResponder()) == NONE,
                 "null list returns NO_DRIVER_AVAILABLE");
         DriverLinkedList some = new DriverLinkedList();
         some.addLast(makeDriver(1));
-        check(AssignmentRetryManager.NO_DRIVER_AVAILABLE.equals(
-                        assign(manager, some, null)),
+        check(assign(manager, some, null) == NONE,
                 "null responder returns NO_DRIVER_AVAILABLE");
+        check("NO_DRIVER_AVAILABLE".equals(
+                        AssignmentRetryManager.NO_DRIVER_AVAILABLE_STATUS),
+                "status text matches the database value");
 
         System.out.println("\n== first driver accepts ==");
         DriverLinkedList three = new DriverLinkedList();
@@ -71,22 +72,21 @@ public class AssignmentRetryManagerTest {
         three.addLast(makeDriver(2));
         three.addLast(makeDriver(3));
         FakeResponder acceptsFirst = new FakeResponder(1);
-        check("1".equals(assign(manager, three, acceptsFirst)),
+        check(assign(manager, three, acceptsFirst) == 1,
                 "driver 1 is assigned");
         check(acceptsFirst.offerCount == 1,
                 "only one driver was asked");
 
         System.out.println("\n== first rejects, second accepts ==");
         FakeResponder acceptsSecond = new FakeResponder(2);
-        check("2".equals(assign(manager, three, acceptsSecond)),
+        check(assign(manager, three, acceptsSecond) == 2,
                 "driver 2 is assigned after driver 1 rejects");
         check("1 2 ".contentEquals(acceptsSecond.offered),
                 "drivers were asked in order: 1 then 2");
 
         System.out.println("\n== all drivers reject ==");
         FakeResponder rejectsAll = new FakeResponder();
-        check(AssignmentRetryManager.NO_DRIVER_AVAILABLE.equals(
-                        assign(manager, three, rejectsAll)),
+        check(assign(manager, three, rejectsAll) == NONE,
                 "all rejected returns NO_DRIVER_AVAILABLE");
         check(rejectsAll.offerCount == 3,
                 "each driver was asked exactly once");
@@ -99,7 +99,7 @@ public class AssignmentRetryManagerTest {
             five.addLast(makeDriver(id));
         }
         FakeResponder acceptsFifth = new FakeResponder(5);
-        check("5".equals(assign(manager, five, acceptsFifth)),
+        check(assign(manager, five, acceptsFifth) == 5,
                 "driver 5 is assigned after four rejections");
         check("1 2 3 4 5 ".contentEquals(acceptsFifth.offered),
                 "each rejected driver was asked exactly once");
@@ -109,8 +109,7 @@ public class AssignmentRetryManagerTest {
         dupes.addLast(makeDriver(30));
         dupes.addLast(makeDriver(30));   // same id twice
         FakeResponder rejectsDupes = new FakeResponder();
-        check(AssignmentRetryManager.NO_DRIVER_AVAILABLE.equals(
-                        assign(manager, dupes, rejectsDupes)),
+        check(assign(manager, dupes, rejectsDupes) == NONE,
                 "duplicate id rejected once is not offered again");
         check(rejectsDupes.offerCount == 1,
                 "driver id 30 was asked only once");
@@ -122,7 +121,7 @@ public class AssignmentRetryManagerTest {
         spaced.setVehicleType(" CAB");
         DriverLinkedList spacedList = new DriverLinkedList();
         spacedList.addLast(spaced);
-        check("40".equals(assign(manager, spacedList, new FakeResponder(40))),
+        check(assign(manager, spacedList, new FakeResponder(40)) == 40,
                 "driver with extra spaces is still matched");
 
         System.out.println("\n== ineligible drivers are never offered ==");
@@ -138,7 +137,7 @@ public class AssignmentRetryManagerTest {
         mixed.addLast(wrongCity);
         mixed.addLast(makeDriver(13));
         FakeResponder acceptsLast = new FakeResponder(13);
-        check("13".equals(assign(manager, mixed, acceptsLast)),
+        check(assign(manager, mixed, acceptsLast) == 13,
                 "only eligible driver 13 is assigned");
         check("13 ".contentEquals(acceptsLast.offered),
                 "ineligible drivers were never asked");
@@ -148,15 +147,14 @@ public class AssignmentRetryManagerTest {
         noneEligible.addLast(offline);
         noneEligible.addLast(busy);
         FakeResponder neverAsked = new FakeResponder(10, 11);
-        check(AssignmentRetryManager.NO_DRIVER_AVAILABLE.equals(
-                        assign(manager, noneEligible, neverAsked)),
+        check(assign(manager, noneEligible, neverAsked) == NONE,
                 "no eligible driver returns NO_DRIVER_AVAILABLE");
         check(neverAsked.offerCount == 0,
                 "nobody was asked");
 
         System.out.println("\n== a second booking starts fresh ==");
         FakeResponder again = new FakeResponder(1);
-        check("1".equals(assign(manager, three, again)),
+        check(assign(manager, three, again) == 1,
                 "driver 1 can get a NEW booking after rejecting an old one");
 
         System.out.println("\nAll " + passed + " checks passed.");

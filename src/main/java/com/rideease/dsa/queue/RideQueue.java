@@ -2,20 +2,6 @@ package com.rideease.dsa.queue;
 
 /**
  * RideQueue — circular array-based FIFO queue for pending ride requests.
- *
- * Time complexity:
- *   enqueue()  -> O(1)   advance rear pointer + insert
- *   dequeue()  -> O(1)   advance front pointer + return (no shifting —
- *                         the circular index makes this possible)
- *   peek()     -> O(1)   direct array access
- *   isEmpty()  -> O(1)   single comparison
- *   display()  -> O(n)   n = number of live ride requests
- *
- * Space: O(capacity), fixed for the lifetime of the queue.
- *
- * Note: Day 1 stores String labels because the Ride model class doesn't
- * exist yet. Future upgrade: will make this generic (RideQueue<T>) so it can
- * hold Ride objects.
  */
 public class RideQueue {
 
@@ -45,6 +31,9 @@ public class RideQueue {
     }
 
     public boolean enqueue(String ride) {
+        if (ride == null) {
+            return false;               // null would look like "empty" later
+        }
         if (isFull()) {
             return false;
         }
