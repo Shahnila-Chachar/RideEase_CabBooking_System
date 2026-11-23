@@ -1,4 +1,3 @@
-
 package com.rideease.model;
 
 import java.time.LocalDateTime;
@@ -12,6 +11,8 @@ public class Driver {
     private String serviceArea;
     private boolean isOnline;
     private LocalDateTime createdAt;
+    private String vehicleType;   // "RICKSHAW" or "CAB" (filled from VEHICLES table later)
+    private boolean busy;         // true while the driver has an active ride
 
 
     public Driver(int driverId, int userId, String licenseNumber,
@@ -55,6 +56,14 @@ public class Driver {
         return createdAt;
     }
 
+    public String getVehicleType() {
+        return vehicleType;
+    }
+
+    public boolean isBusy() {
+        return busy;
+    }
+
 
     public void setDriverId(int driverId) {
         this.driverId = driverId;
@@ -82,5 +91,13 @@ public class Driver {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public void setVehicleType(String vehicleType) {
+        this.vehicleType = vehicleType;
+    }
+
+    public void setBusy(boolean busy) {
+        this.busy = busy;
     }
 }
