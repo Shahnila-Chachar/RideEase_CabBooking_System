@@ -91,9 +91,10 @@ public class AssignmentAttemptDAO {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, bookingId);
             statement.setInt(2, driverId);
+
             try (ResultSet rs = statement.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1);
+                    return rs.getInt("attempt_id");
                 }
             }
         } catch (Exception e) {

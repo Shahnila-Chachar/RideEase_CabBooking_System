@@ -4,6 +4,8 @@ import com.rideease.database.DBConnection;
 import com.rideease.model.Driver;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -136,6 +138,24 @@ public class DriverDAO {
         return null;
     }
 
+    public List<Driver> findOnlineDrivers() {
+        List<Driver> drivers = new ArrayList<>();
+        String query = "SELECT * FROM DRIVERS WHERE is_online = TRUE ORDER BY driver_id";
+
+        try (
+            Connection connection = DBConnection.getConnection();
+            PreparedStatement statement = connection.prepareStatement(query);
+            ResultSet resultSet = statement.executeQuery()
+        ) {
+            while (resultSet.next()) {
+                drivers.add(mapDriver(resultSet));
+            }
+        } catch (SQLException e) {
+            System.out.println("Online driver search failed: " + e.getMessage());
+        }
+
+        return drivers;
+    }
     public boolean updateAvailability(int driverId, boolean isOnline) {
 
         String query =

@@ -3,62 +3,64 @@ package com.rideease.service;
 import com.rideease.dsa.linkedlist.DriverLinkedList;
 import com.rideease.model.Driver;
 
-/**
- * DriverMatchingService — finds an eligible driver for a booking.
-
- * Note: Text comparison ignores upper/lower case and extra spaces
- * (" sukkur " = "Sukkur").
- */
 public class DriverMatchingService {
 
-    public Driver findEligibleDriver(DriverLinkedList drivers,
-                                     DriverLinkedList excluded,
-                                     String city,
-                                     String serviceArea,
-                                     String vehicleType) {
+    public Driver findEligibleDriver(
+            DriverLinkedList drivers,
+            DriverLinkedList excluded,
+            String city,
+            String serviceArea,
+            String vehicleType) {
+
         if (drivers == null) {
-            return null;                         // EDGE: no list given
+            return null;
         }
 
         for (Driver driver : drivers) {
             if (isEligible(driver, excluded, city, serviceArea, vehicleType)) {
-                return driver;                   // first eligible driver wins
+                return driver;
             }
         }
-        return null;                             // nobody matched
+
+        return null;
     }
 
-    private boolean isEligible(Driver driver,
-                               DriverLinkedList excluded,
-                               String city,
-                               String serviceArea,
-                               String vehicleType) {
+    private boolean isEligible(
+            Driver driver,
+            DriverLinkedList excluded,
+            String city,
+            String serviceArea,
+            String vehicleType) {
+
         if (driver == null) {
-            return false;                        // EDGE: null entry
+            return false;
         }
-        if (!driver.isOnline()) {
-            return false;                        // skip offline drivers
+
+        if (!driver.isOnline() || driver.isBusy()) {
+            return false;
         }
-        if (driver.isBusy()) {
-            return false;                        // skip busy drivers
-        }
+
         if (!sameText(driver.getCity(), city)) {
-            return false;                        // wrong city
+            return false;
         }
+
         if (!sameText(driver.getServiceArea(), serviceArea)) {
-            return false;                        // wrong service area
+            return false;
         }
+
         if (!sameText(driver.getVehicleType(), vehicleType)) {
-            return false;                        // wrong vehicle type
+            return false;
         }
+
         if (excluded != null && excluded.contains(driver.getDriverId())) {
-            return false;                        // already rejected this booking
+            return false;
         }
+
         return true;
     }
 
-    // true only when both texts exist and match,
     private boolean sameText(String a, String b) {
-        return a != null && b != null && a.trim().equalsIgnoreCase(b.trim());
+        return a != null && b != null
+                && a.trim().equalsIgnoreCase(b.trim());
     }
 }
