@@ -1,28 +1,70 @@
 package com.rideease.app;
 
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
+import com.rideease.model.User;
+import com.rideease.service.UserService;
+import com.rideease.ui.AuthMenu;
+import com.rideease.ui.PassengerMenu;
+import com.rideease.ui.DriverMenu;
 
-public class MainApp extends Application {
+import java.util.Scanner;
 
-    @Override
-    public void start(Stage stage) {
+public class MainApp {
 
-        Label heading = new Label("Welcome to RideEase!");
+    private static void showWelcomeBanner() {
+        System.out.println();
+        System.out.println("==================================================");
+        System.out.println("                                                  ");
+        System.out.println("                  RIDEEASE                        ");
+        System.out.println("          SMART RIDE BOOKING SYSTEM               ");
+        System.out.println("                                                  ");
+        System.out.println("       DSA-Based Transportation Solution          ");
+        System.out.println("==================================================");
+        System.out.println("              Welcome to RideEase!                ");
+        System.out.println("--------------------------------------------------");
+    }
 
-        StackPane root = new StackPane(heading);
-
-        Scene scene = new Scene(root, 600, 400);
-
-        stage.setTitle("RideEase - Cab Booking System");
-        stage.setScene(scene);
-        stage.show();
+    private static void showUserWelcome(User user) {
+        System.out.println();
+        System.out.println("--------------------------------------------------");
+        System.out.println("  Welcome, " + user.getFullName());
+        System.out.println("  Account Type: " + user.getRole());
+        System.out.println("--------------------------------------------------");
     }
 
     public static void main(String[] args) {
-        launch(args);
+
+        Scanner scanner = new Scanner(System.in);
+
+        UserService userService = new UserService();
+        AuthMenu authMenu = new AuthMenu(userService, scanner);
+
+        showWelcomeBanner();
+
+        User loggedInUser = authMenu.start();
+
+        if (loggedInUser != null) {
+
+            showUserWelcome(loggedInUser);
+
+            String role = String.valueOf(loggedInUser.getRole());
+
+            if ("PASSENGER".equalsIgnoreCase(role)) {
+                new PassengerMenu(loggedInUser, scanner).start();
+
+            } else if ("DRIVER".equalsIgnoreCase(role)) {
+                new DriverMenu(loggedInUser, scanner).start();
+
+            } else {
+                System.out.println("Access denied: Unsupported account role.");
+            }
+        }
+
+        System.out.println();
+        System.out.println("==================================================");
+        System.out.println("          Thank you for choosing RideEase!        ");
+        System.out.println("              Safe journeys, always.              ");
+        System.out.println("==================================================");
+
+        scanner.close();
     }
 }

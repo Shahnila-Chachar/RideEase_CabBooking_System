@@ -9,9 +9,6 @@ import com.rideease.model.Vehicle;
 
 import java.util.List;
 
-/**
- * DriverPoolLoader — prepares drivers from MySQL for DriverMatchingService.
- */
 public class DriverPoolLoader {
 
     private final VehicleDAO vehicleDAO;
@@ -26,35 +23,39 @@ public class DriverPoolLoader {
         DriverLinkedList drivers = new DriverLinkedList();
 
         if (onlineDrivers == null) {
-            return drivers;                      // EDGE: nothing given
+            return drivers;
         }
 
         for (Driver driver : onlineDrivers) {
             if (driver == null) {
-                continue;                        // EDGE: null entry
+                continue;
             }
 
             Vehicle vehicle = vehicleDAO.findByDriverId(driver.getDriverId());
+
             if (vehicle == null) {
-                continue;                        // no vehicle: cannot take rides
+                continue;
             }
 
             driver.setVehicleType(vehicle.getVehicleType());
             driver.setBusy(hasActiveRide(driver.getDriverId()));
             drivers.addLast(driver);
         }
+
         return drivers;
     }
 
-    // busy = at least one ACCEPTED or IN_PROGRESS booking
     private boolean hasActiveRide(int driverId) {
         List<Booking> bookings = bookingDAO.findByDriverId(driverId);
+
         for (Booking booking : bookings) {
             String status = booking.getStatus();
+
             if ("ACCEPTED".equals(status) || "IN_PROGRESS".equals(status)) {
                 return true;
             }
         }
+
         return false;
     }
 }
